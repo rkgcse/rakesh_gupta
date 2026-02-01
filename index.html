@@ -807,7 +807,7 @@
     </footer>
 
     <script>
-      function handleBooking(event) {
+      async function handleBooking(event) {
         event.preventDefault();
         const form = document.getElementById("bookingForm");
         const successMessage = document.getElementById("successMessage");
@@ -822,13 +822,33 @@
           reason: document.getElementById("reason").value,
         };
 
-        console.log("Appointment booked:", formData);
-        successMessage.classList.add("show");
-        form.reset();
+        try {
+          // Send booking data to the API
+          const response = await fetch('/api/bookings-handler', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+          });
 
-        setTimeout(() => {
-          successMessage.classList.remove("show");
-        }, 5000);
+          if (response.ok) {
+            const result = await response.json();
+            console.log("Appointment booked successfully:", result);
+            successMessage.classList.add("show");
+            form.reset();
+
+            setTimeout(() => {
+              successMessage.classList.remove("show");
+            }, 5000);
+          } else {
+            console.error("Error booking appointment:", response.statusText);
+            alert("Error booking appointment. Please try again.");
+          }
+        } catch (error) {
+          console.error("Error submitting booking:", error);
+          alert("Error submitting booking. Please try again.");
+        }
       }
 
       document.getElementById("date").min = new Date()
